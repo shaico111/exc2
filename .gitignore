@@ -61,4 +61,4 @@ CMakeLists.txt
 /.vscode
 *.lastbuildstate
 *.tlog
-/x64
+/exc2/x64
