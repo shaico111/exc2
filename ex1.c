@@ -10,16 +10,16 @@
 * if no such words are found, it will notify the user.
 */
 void Ex1() {
-    char letter, str[100] = "";
+    char letter = '-', str[100];
     char** words_found;
     int array_size = 0;
     // asking the user to enter a string with a length between 1-99 characters
     printf("hello! please enter your string, its length should be between 1-99 characters\n");
-    gets_s(str, sizeof(str));
+    scanf(" %99[^\n]", str);
 
     // asking the user to enter the starting letter for the words they wish us to find
     printf("now what is the starting letter for all the words you want to find? ");
-    getchar(letter);
+    scanf(" %c", &letter);
 
 	// getting an array of words that start with the letter given by the user using the split function
     words_found = split(letter, str, &array_size);
@@ -33,7 +33,7 @@ void Ex1() {
         printStringsArray(words_found, array_size);
     }
 
-    freeMatrix(words_found, array_size);
+    freeMatrix((void**)words_found, array_size);
 }
 
 /*
@@ -43,9 +43,8 @@ void Ex1() {
 */
 char** split(char letter, char* str, int* p_size) {
     // creating the initial array and setting its size to 1
-    *p_size = 1;
-    char** ArrayOfWords = malloc(sizeof(char*) * 1);
-    ArrayOfWords[0] = NULL;
+    *p_size = 0;
+    char** ArrayOfWords = NULL;
     int i = 0, counter = 0;
     char curr = str[i];
 
@@ -56,7 +55,7 @@ char** split(char letter, char* str, int* p_size) {
     while (curr)
     {
         if (tolower(curr) == tolower(letter))
-            input_word(&i, &counter, str, ArrayOfWords, p_size);
+            input_word(&i, &counter, &str, &ArrayOfWords, p_size);
         else if (curr == ' ')
             skip_spaces(&i, str);
         else
@@ -65,17 +64,22 @@ char** split(char letter, char* str, int* p_size) {
     }
 
     //checking if we found any words
-    if (ArrayOfWords[0] == NULL)
+    if (counter == 0)
     {
-        // setting the size to 0, freeing the unused memory and returning that no word was found (return NULL)
+        free(ArrayOfWords);
         *p_size = 0;
-        free (ArrayOfWords[0]);
         return NULL;
     }
 
+    
     // getting rid of any unused memory space in the array and returning the array
     *p_size = counter;
-    realloc(ArrayOfWords, sizeof(char*) * *p_size);
+    char** temp = realloc(ArrayOfWords, sizeof(char*) * (*p_size));
+    if (temp == NULL) {
+        printf("Memory allocation failed!\n");
+        exit(1);
+    }
+    ArrayOfWords = temp;
 
     return ArrayOfWords;
 }
@@ -84,29 +88,40 @@ char** split(char letter, char* str, int* p_size) {
 /*
 * this function will input a word into the array from the split function
 */
-void input_word(int* i, int* counter, char* str, char** ArrayOfWords, int* p_size)
+void input_word(int* i, int* counter, char** str, char*** ArrayOfWords, int* p_size)
 {
-    int j = *i, word_len = 1;
+    int j = *i, word_len = 0;
     // check if there is a space to input a word into the array, if not double the size of the array
-    if (*counter > *p_size)
+    if (*counter >= *p_size)
     {
-        *p_size = 2 * *p_size;
-        realloc(ArrayOfWords, sizeof(char*) * *p_size);
+        *p_size = (*p_size == 0) ? 2 : 2 * (*p_size);
+        char** temp = realloc(*ArrayOfWords, sizeof(char*) * (*p_size));
+        if (temp == NULL) {
+            printf("Memory allocation failed!\n");
+            exit(1);
+        }
+        *ArrayOfWords = temp;
     }
 
     // check inside the string how long is the word we wish to input and save the length + a space for the null char '\0'
-    while (str[j] != ' ' && str[j] != '\0')
+    while ((*str)[j] != ' ' && (*str)[j] != '\0')
+    {
         word_len++;
+        j++;
+    }
 
-    // input the found word into the array and update the location to one character before the next space in our string
-    ArrayOfWords[*counter] = malloc(word_len);
+    // input the found word into the array and update the location to  the next space in our string
+    (*ArrayOfWords)[*counter] = (char*)malloc((word_len + 1) * sizeof(char));
+    if ((*ArrayOfWords)[*counter] == NULL) {
+        printf("Memory allocation failed!\n");
+        exit(1);
+    }
     for (j = 0;j < word_len - 1;j++)
-        ArrayOfWords[*counter][j] = str[*i++];
+        (*ArrayOfWords)[*counter][j] = (*str)[(*i)++];
 
-    // add the null character '\0' in the end of the word and update the counter and location of the next space in the string
-    ArrayOfWords[*counter][j] = '\0';
+    // add the null character '\0' in the end of the word and update the counter
+    (*ArrayOfWords)[*counter][j] = '\0';
     *counter += 1;
-    *i += 1;
 }
 
 /*
@@ -130,7 +145,7 @@ void skip_word(int* i, char* str)
 }
 
 /*
-* this function will print ll of the words that the split function found
+* this function will print all of the words that the split function found
 */
 void printStringsArray(char** str_arr, int size) {
     for (int i = 0; i < size; i++)
@@ -143,6 +158,7 @@ void printStringsArray(char** str_arr, int size) {
 void freeMatrix(void** A, int rows) {
     for (int i = 0; i < rows; i++)
         free(A[i]);
+
     free(A);
     A = NULL;
 }
