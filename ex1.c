@@ -37,35 +37,45 @@ void Ex1() {
 }
 
 /*
-* this function will create an array that will contain all the words from a given string that start with a specific letter,
-* supplied by the user.
-* this function will also return the size of said array by reference/
-*/
+ * this function will create an array that will contain all the words
+ * from a given string that start with a specific letter supplied by the user.
+ * this function will also return the size of said array by reference
+ *
+ * @param letter  the letter every returned word must start with (case-insensitive)
+ * @param str     input string to scan
+ * @param p_size  [output variable] will be updated to number of matching words
+ *
+ * @return  a dynamic array of strings (each word malloc’ed separately);
+ *          NULL if no matching words were found
+ */
 char** split(char letter, char* str, int* p_size) {
-    // creating the initial array and setting its size to 1
+    // creating the initial array
     *p_size = 0;
     char** ArrayOfWords = NULL;
     int i = 0, counter = 0;
     char curr = str[i];
 
-    // a loop that goes through every single word and makes a decision on how to proccess it base on three cases:
-    // 1) this word starts with the corect letter 
-    // 2) this word does not start with the corect letter 
-    // 3) we are in the space between words
+    // loop through the spaces and initials of each word in str
     while (curr)
     {
         if (tolower(curr) == tolower(letter))
+            // current letter is equal to the given letter
             input_word(&i, &counter, &str, &ArrayOfWords, p_size);
         else if (curr == ' ')
+            // current letter is a space
             skip_spaces(&i, str);
         else
+            // current letter isn't a space or the given letter
             skip_word(&i, str);
+
+        // get the next space or initial of the next word
         curr = str[i];
     }
 
-    //checking if we found any words
+    //if we didn't find any words
     if (counter == 0)
     {
+        // free the array and return null
         free(ArrayOfWords);
         *p_size = 0;
         return NULL;
@@ -75,10 +85,7 @@ char** split(char letter, char* str, int* p_size) {
     // getting rid of any unused memory space in the array and returning the array
     *p_size = counter;
     char** temp = realloc(ArrayOfWords, sizeof(char*) * (*p_size));
-    if (temp == NULL) {
-        printf("Memory allocation failed!\n");
-        exit(1);
-    }
+
     ArrayOfWords = temp;
 
     return ArrayOfWords;
@@ -86,8 +93,15 @@ char** split(char letter, char* str, int* p_size) {
 
 
 /*
-* this function will input a word into the array from the split function
-*/
+ * this function will input a word into the array from the split function
+ *
+ * @param i           [input&output variable] index in the string, updated to point after the inserted word
+ * @param counter     [input&output variable] current number of words inserted into the array
+ * @param str         pointer to the input string (NUL-terminated)
+ * @param ArrayOfWords [input&output variable] pointer to the dynamic array of words, may be reallocated
+ * @param p_size      [input&output variable] current allocated size of ArrayOfWords, updated if reallocation occurs
+ * 
+ */
 void input_word(int* i, int* counter, char** str, char*** ArrayOfWords, int* p_size)
 {
     int j = *i, word_len = 0;
@@ -125,9 +139,12 @@ void input_word(int* i, int* counter, char** str, char*** ArrayOfWords, int* p_s
 }
 
 /*
-* this function will skip all the spaces that seperate two words 
-* until it encounters the next word or the end of the string
-*/
+ * this function will skip all the spaces that separate two words
+ * until it encounters the next word or the end of the string
+ *
+ * @param i   [input&output variable] current index in the string
+ * @param str input string
+ */
 void skip_spaces(int* i, char* str)
 {
     while (str[*i] == ' ' && str[*i] != '\0')
@@ -137,6 +154,9 @@ void skip_spaces(int* i, char* str)
 /*
 * this function will skip the word that doesnt start with the letter given by the user 
 * until it encounters a space or the end of the string
+* 
+* @param i   [input&output variable] current index in the string
+* @param str input string
 */
 void skip_word(int* i, char* str)
 {
@@ -146,6 +166,9 @@ void skip_word(int* i, char* str)
 
 /*
 * this function will print all of the words that the split function found
+* 
+* @param str_arr  array of words
+* @param size     number of words in the array
 */
 void printStringsArray(char** str_arr, int size) {
     for (int i = 0; i < size; i++)
@@ -154,6 +177,9 @@ void printStringsArray(char** str_arr, int size) {
 
 /*
 * this function will free all the memory allocated for the array of strings and set the pointer to NULL
+* 
+* @param A     array of pointers (each pointing to allocated memory)
+* @param rows  number of elements in the array
 */
 void freeMatrix(void** A, int rows) {
     for (int i = 0; i < rows; i++)
