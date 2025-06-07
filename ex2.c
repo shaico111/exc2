@@ -1,6 +1,30 @@
 #include "ex2.h"
 
 /**
+ * Handles Exercise 2:
+ * 1. Prompts the user to enter input.
+ * 2. Stores the input in a file.
+ * 3. Analyzes the file to find the most frequent English letter.
+ */
+void Ex2()
+{
+    const char filename[] = "input.txt";
+
+    // Prompt user for input
+    printf("Enter the text that should go into input.txt\n");
+
+    // Write the input to a file
+    createFile(filename);
+
+    // Find and print the most frequent letter
+    char most = commonestLetter(filename);
+    if (most)
+        printf("\nMost frequent letter: %c\n", most);
+    else
+        printf("\nNo English letters were found in the file.\n");
+}
+
+/**
  * Returns the alphabetical index (0–25) of a letter.
  * If the character is not an English letter, returns -1.
  *
@@ -19,30 +43,7 @@ void manuallyCleanBuffer() {
     while ((ch = getchar()) != '\n' && ch != EOF); // clean buffer
 }
 
-/**
- * Handles Exercise 2:
- * 1. Prompts the user to enter input.
- * 2. Stores the input in a file.
- * 3. Analyzes the file to find the most frequent English letter.
- */
-void Ex2()
-{
-    const char filename[] = "D:\\test\\input.txt";
 
-    // Prompt user for input
-    printf("Enter the text that should go into input.txt\n");
-    printf("Press Enter when done\n");
-
-    // Write the input to a file
-    createFile(filename);
-
-    // Find and print the most frequent letter
-    char most = commonestLetter(filename);
-    if (most)
-        printf("\nMost frequent letter: %c\n", most);
-    else
-        printf("\nNo English letters were found in the file.\n");
-}
 
 /**
  * Reads user input character-by-character and writes it to a file.
@@ -55,16 +56,18 @@ void createFile(char* filename)
     manuallyCleanBuffer();
     FILE* fp = fopen(filename, "w");
     if (!fp) {
-        printf("createFile – cannot open output file\n");
+        printf("createFile - cannot open output file\n");
         return;
     }
 
+    printf("Press and then Enter Ctrl+Z and then Enter again when done\n");
     int current = getchar();
     if (current == EOF) {
         fclose(fp);
         return;
     }
 
+    // Do not write the \nEOF
     int next = getchar();
     while (next != EOF) {
         fputc(current, fp);
